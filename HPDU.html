@@ -2,7 +2,7 @@
 <html lang="ja">
     <head>
         <meta charset="UTF-8">
-        <title>HPDU 2026 Judge Sheet (Team Dropdown)</title>
+        <title>HPDU 2026 Judge Sheet (Motion Field Added)</title>
         <style>
             body { font-family: "Helvetica Neue", Arial, sans-serif; line-height: 1.4; color: #333; margin: 10px; background-color: #f0f2f5; }
             .container-wrapper { max-width: 1200px; margin: 0 auto; }
@@ -16,6 +16,11 @@
                 text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9em;
             }
             .ballot-link:hover { background-color: #3367d6; }
+            
+            .motion-section {
+                background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 10px;
+            }
+            .motion-input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 1.1em; box-sizing: border-box; }
             
             .main-container { display: flex; gap: 10px; justify-content: center; align-items: flex-start; margin-bottom: 10px; }
             .team-column { flex: 1; min-width: 400px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -67,6 +72,11 @@
                     </select>
                     <button type="button" class="btn-reset" onclick="resetForm()" style="margin-left:20px;">Reset All Data</button>
                 </div>
+            </div>
+            
+            <div class="motion-section">
+                <strong style="display:block; margin-bottom:5px;">Motion:</strong>
+                <input type="text" id="motion_text" class="motion-input" placeholder="Enter the motion here...">
             </div>
             
             <span class="section-title">Score Board</span>
@@ -195,8 +205,7 @@
                 const sel = document.getElementById(id);
                 teamList.forEach(name => {
                         let opt = document.createElement('option');
-                        opt.value = name;
-                        opt.innerHTML = name;
+                        opt.value = name; opt.innerHTML = name;
                         sel.appendChild(opt);
                 });
             }
@@ -258,11 +267,11 @@
                 document.querySelectorAll('input, select, textarea').forEach(el => {
                         data[el.id] = el.type === 'checkbox' ? el.checked : el.value;
                 });
-                localStorage.setItem('hpdu_judge_v8', JSON.stringify(data));
+                localStorage.setItem('hpdu_judge_v9', JSON.stringify(data));
             }
             
             function loadData() {
-                const data = JSON.parse(localStorage.getItem('hpdu_judge_v8'));
+                const data = JSON.parse(localStorage.getItem('hpdu_judge_v9'));
                 if (data) {
                     Object.keys(data).forEach(id => {
                             const el = document.getElementById(id);
@@ -277,7 +286,7 @@
             
             function resetForm() {
                 if (confirm('データをリセットするか？')) {
-                    localStorage.removeItem('hpdu_judge_v8');
+                    localStorage.removeItem('hpdu_judge_v9');
                     location.reload();
                 }
             }
