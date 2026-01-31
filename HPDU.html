@@ -2,7 +2,7 @@
 <html lang="ja">
     <head>
         <meta charset="UTF-8">
-        <title>HPDU 2026 Judge Sheet (Auto-Winner)</title>
+        <title>HPDU 2026 Judge Sheet (Finalized Winner Logic)</title>
         <style>
             body { font-family: "Helvetica Neue", Arial, sans-serif; line-height: 1.4; color: #333; margin: 10px; background-color: #f0f2f5; }
             .container-wrapper { max-width: 1200px; margin: 0 auto; }
@@ -31,7 +31,7 @@
             textarea { resize: vertical; min-height: 80px; font-family: inherit; width: 96%; }
             
             .total-display { font-weight: bold; font-size: 1.1em; background-color: #eee; }
-            .grand-total { font-weight: bold; font-size: 1.3em; background-color: #fff9c4; border: 2px solid #fbc02d; position: relative; }
+            .grand-total { font-weight: bold; font-size: 1.3em; background-color: #fff9c4; border: 2px solid #fbc02d; position: relative; height: 50px; }
             
             .winner-badge { 
                 display: none; color: #d32f2f; font-weight: bold; font-size: 1.1em; 
@@ -50,7 +50,7 @@
             <div class="header-section">
                 <div class="title-area">
                     <div style="font-size: 1.2em; font-weight: bold;">HPDU 2026 Judge Sheet</div>
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLScBnbw22PwzmzyiGisIBQp7J9ZLPlGV7yZelpWWrGBBGY-ZOg/viewform" target="_blank" class="ballot-link">Go to Judge Ballot Form</a>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLScBnbw22PwzmzyiGisIBQp7J9ZLPlGV7yZelpWWrGBBGY-ZOg/viewform" target="_blank" class="ballot-link">Jump to Judge Ballot</a>
                 </div>
                 <div>
                     Room: <input type="text" id="room" style="width:80px;">
@@ -75,9 +75,9 @@
                     <div class="gov-header">Government Team</div>
                     <table>
                         <tr><th width="25%">Speaker</th><th width="18%">Style</th><th width="18%">Content</th><th width="18%">Strategy</th><th width="21%">Overall</th></tr>
-                        <tr><td>1st (PM)</td><td><select id="g1_s"></select></td><td><select id="g1_c"></select></td><td><select id="g1_st"></select></td><td id="g1_total" class="total-display">0</td></tr>
-                        <tr><td>2nd (MG)</td><td><select id="g2_s"></select></td><td><select id="g2_c"></select></td><td><select id="g2_st"></select></td><td id="g2_total" class="total-display">0</td></tr>
-                        <tr><td>Reply (GR)</td><td><select id="gr_s"></select></td><td><select id="gr_c"></select></td><td><select id="gr_st"></select></td><td id="gr_total" class="total-display">0</td></tr>
+                        <tr><td>1st (PM)</td><td><select id="g1_s" class="score-input"></select></td><td><select id="g1_c" class="score-input"></select></td><td><select id="g1_st" class="score-input"></select></td><td id="g1_total" class="total-display">0</td></tr>
+                        <tr><td>2nd (MG)</td><td><select id="g2_s" class="score-input"></select></td><td><select id="g2_c" class="score-input"></select></td><td><select id="g2_st" class="score-input"></select></td><td id="g2_total" class="total-display">0</td></tr>
+                        <tr><td>Reply (GR)</td><td><select id="gr_s" class="score-input"></select></td><td><select id="gr_c" class="score-input"></select></td><td><select id="gr_st" class="score-input"></select></td><td id="gr_total" class="total-display">0</td></tr>
                         <tr>
                             <th colspan="4" style="text-align:right">Gov. Total:</th>
                             <td class="grand-total">
@@ -91,9 +91,9 @@
                     <div class="opp-header">Opposition Team</div>
                     <table>
                         <tr><th width="25%">Speaker</th><th width="18%">Style</th><th width="18%">Content</th><th width="18%">Strategy</th><th width="21%">Overall</th></tr>
-                        <tr><td>1st (LO)</td><td><select id="o1_s"></select></td><td><select id="o1_c"></select></td><td><select id="o1_st"></select></td><td id="o1_total" class="total-display">0</td></tr>
-                        <tr><td>2nd (MO)</td><td><select id="o2_s"></select></td><td><select id="o2_c"></select></td><td><select id="o2_st"></select></td><td id="o2_total" class="total-display">0</td></tr>
-                        <tr><td>Reply (OR)</td><td><select id="or_s"></select></td><td><select id="or_c"></select></td><td><select id="or_st"></select></td><td id="or_total" class="total-display">0</td></tr>
+                        <tr><td>1st (LO)</td><td><select id="o1_s" class="score-input"></select></td><td><select id="o1_c" class="score-input"></select></td><td><select id="o1_st" class="score-input"></select></td><td id="o1_total" class="total-display">0</td></tr>
+                        <tr><td>2nd (MO)</td><td><select id="o2_s" class="score-input"></select></td><td><select id="o2_c" class="score-input"></select></td><td><select id="o2_st" class="score-input"></select></td><td id="o2_total" class="total-display">0</td></tr>
+                        <tr><td>Reply (OR)</td><td><select id="or_s" class="score-input"></select></td><td><select id="or_c" class="score-input"></select></td><td><select id="or_st" class="score-input"></select></td><td id="or_total" class="total-display">0</td></tr>
                         <tr>
                             <th colspan="4" style="text-align:right">Opp. Total:</th>
                             <td class="grand-total">
@@ -183,6 +183,11 @@
             ];
             setup.forEach(g => g.ids.forEach(id => populateSelect(id, g.r[0], g.r[1])));
             
+            const scoreIds = [
+            'g1_s','g1_c','g1_st','g2_s','g2_c','g2_st','gr_s','gr_c','gr_st',
+            'o1_s','o1_c','o1_st','o2_s','o2_c','o2_st','or_s','or_c','or_st'
+            ];
+            
             function calculate() {
                 const v = (id) => Number(document.getElementById(id).value);
                 const set = (id, val) => document.getElementById(id).innerText = val;
@@ -201,16 +206,22 @@
                 const oppTotal = o1+o2+or;
                 set('opp_grand_total', oppTotal);
                 
-                // Winner Logic
+                // Winner Logic: Only if all 18 fields are filled (not "0")
                 const gBadge = document.getElementById('gov_winner');
                 const oBadge = document.getElementById('opp_winner');
+                const allFilled = scoreIds.every(id => document.getElementById(id).value !== "0");
                 
-                if (govTotal > oppTotal && govTotal > 0) {
-                    gBadge.style.display = 'block';
-                    oBadge.style.display = 'none';
-                } else if (oppTotal > govTotal && oppTotal > 0) {
-                    gBadge.style.display = 'none';
-                    oBadge.style.display = 'block';
+                if (allFilled) {
+                    if (govTotal > oppTotal) {
+                        gBadge.style.display = 'block';
+                        oBadge.style.display = 'none';
+                    } else if (oppTotal > govTotal) {
+                        gBadge.style.display = 'none';
+                        oBadge.style.display = 'block';
+                    } else {
+                        gBadge.style.display = 'none';
+                        oBadge.style.display = 'none';
+                    }
                 } else {
                     gBadge.style.display = 'none';
                     oBadge.style.display = 'none';
@@ -224,11 +235,11 @@
                 document.querySelectorAll('input, select, textarea').forEach(el => {
                         data[el.id] = el.type === 'checkbox' ? el.checked : el.value;
                 });
-                localStorage.setItem('hpdu_judge_v6', JSON.stringify(data));
+                localStorage.setItem('hpdu_judge_v7', JSON.stringify(data));
             }
             
             function loadData() {
-                const data = JSON.parse(localStorage.getItem('hpdu_judge_v6'));
+                const data = JSON.parse(localStorage.getItem('hpdu_judge_v7'));
                 if (data) {
                     Object.keys(data).forEach(id => {
                             const el = document.getElementById(id);
@@ -243,7 +254,7 @@
             
             function resetForm() {
                 if (confirm('データをリセットするか？')) {
-                    localStorage.removeItem('hpdu_judge_v6');
+                    localStorage.removeItem('hpdu_judge_v7');
                     location.reload();
                 }
             }
