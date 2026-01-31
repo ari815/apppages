@@ -2,7 +2,7 @@
 <html lang="ja">
     <head>
         <meta charset="UTF-8">
-        <title>HPDU 2026 Judge Sheet (Finalized Winner Logic)</title>
+        <title>HPDU 2026 Judge Sheet (Team Dropdown)</title>
         <style>
             body { font-family: "Helvetica Neue", Arial, sans-serif; line-height: 1.4; color: #333; margin: 10px; background-color: #f0f2f5; }
             .container-wrapper { max-width: 1200px; margin: 0 auto; }
@@ -74,6 +74,10 @@
                 <div class="team-column">
                     <div class="gov-header">Government Team</div>
                     <table>
+                        <tr>
+                            <th width="25%">ID/Name</th>
+                            <td colspan="4"><select id="gov_team_select" class="team-selector"></select></td>
+                        </tr>
                         <tr><th width="25%">Speaker</th><th width="18%">Style</th><th width="18%">Content</th><th width="18%">Strategy</th><th width="21%">Overall</th></tr>
                         <tr><td>1st (PM)</td><td><select id="g1_s" class="score-input"></select></td><td><select id="g1_c" class="score-input"></select></td><td><select id="g1_st" class="score-input"></select></td><td id="g1_total" class="total-display">0</td></tr>
                         <tr><td>2nd (MG)</td><td><select id="g2_s" class="score-input"></select></td><td><select id="g2_c" class="score-input"></select></td><td><select id="g2_st" class="score-input"></select></td><td id="g2_total" class="total-display">0</td></tr>
@@ -90,6 +94,10 @@
                 <div class="team-column">
                     <div class="opp-header">Opposition Team</div>
                     <table>
+                        <tr>
+                            <th width="25%">ID/Name</th>
+                            <td colspan="4"><select id="opp_team_select" class="team-selector"></select></td>
+                        </tr>
                         <tr><th width="25%">Speaker</th><th width="18%">Style</th><th width="18%">Content</th><th width="18%">Strategy</th><th width="21%">Overall</th></tr>
                         <tr><td>1st (LO)</td><td><select id="o1_s" class="score-input"></select></td><td><select id="o1_c" class="score-input"></select></td><td><select id="o1_st" class="score-input"></select></td><td id="o1_total" class="total-display">0</td></tr>
                         <tr><td>2nd (MO)</td><td><select id="o2_s" class="score-input"></select></td><td><select id="o2_c" class="score-input"></select></td><td><select id="o2_st" class="score-input"></select></td><td id="o2_total" class="total-display">0</td></tr>
@@ -163,6 +171,15 @@
         </div>
         
         <script>
+            const teamList = [
+            "-Select Team-",
+            "1 Kago Chuo A", "2 Kago Chuo B", "3 Ikueikan",
+            "4 Konan A", "5 Konan B", "6 Konan C",
+            "7 Tsurumaru A", "8 Tsurumaru B", "9 Tsurumaru C",
+            "10 Oshima A", "11 Oshima B",
+            "12 La Salle A", "13 La Salle B", "14 La Salle C"
+            ];
+            
             function populateSelect(id, min, max) {
                 const sel = document.getElementById(id);
                 if(!sel) return;
@@ -174,6 +191,16 @@
                 }
             }
             
+            function populateTeams(id) {
+                const sel = document.getElementById(id);
+                teamList.forEach(name => {
+                        let opt = document.createElement('option');
+                        opt.value = name;
+                        opt.innerHTML = name;
+                        sel.appendChild(opt);
+                });
+            }
+            
             const ranges = { n: [26, 32], st: [10, 16], r: [11, 17], rst: [3, 9] };
             const setup = [
             {ids: ['g1_s','g1_c','g2_s','g2_c','o1_s','o1_c','o2_s','o2_c'], r: ranges.n},
@@ -182,6 +209,8 @@
             {ids: ['gr_st','or_st'], r: ranges.rst}
             ];
             setup.forEach(g => g.ids.forEach(id => populateSelect(id, g.r[0], g.r[1])));
+            populateTeams('gov_team_select');
+            populateTeams('opp_team_select');
             
             const scoreIds = [
             'g1_s','g1_c','g1_st','g2_s','g2_c','g2_st','gr_s','gr_c','gr_st',
@@ -206,27 +235,21 @@
                 const oppTotal = o1+o2+or;
                 set('opp_grand_total', oppTotal);
                 
-                // Winner Logic: Only if all 18 fields are filled (not "0")
                 const gBadge = document.getElementById('gov_winner');
                 const oBadge = document.getElementById('opp_winner');
                 const allFilled = scoreIds.every(id => document.getElementById(id).value !== "0");
                 
                 if (allFilled) {
                     if (govTotal > oppTotal) {
-                        gBadge.style.display = 'block';
-                        oBadge.style.display = 'none';
+                        gBadge.style.display = 'block'; oBadge.style.display = 'none';
                     } else if (oppTotal > govTotal) {
-                        gBadge.style.display = 'none';
-                        oBadge.style.display = 'block';
+                        gBadge.style.display = 'none'; oBadge.style.display = 'block';
                     } else {
-                        gBadge.style.display = 'none';
-                        oBadge.style.display = 'none';
+                        gBadge.style.display = 'none'; oBadge.style.display = 'none';
                     }
                 } else {
-                    gBadge.style.display = 'none';
-                    oBadge.style.display = 'none';
+                    gBadge.style.display = 'none'; oBadge.style.display = 'none';
                 }
-                
                 saveData();
             }
             
@@ -235,11 +258,11 @@
                 document.querySelectorAll('input, select, textarea').forEach(el => {
                         data[el.id] = el.type === 'checkbox' ? el.checked : el.value;
                 });
-                localStorage.setItem('hpdu_judge_v7', JSON.stringify(data));
+                localStorage.setItem('hpdu_judge_v8', JSON.stringify(data));
             }
             
             function loadData() {
-                const data = JSON.parse(localStorage.getItem('hpdu_judge_v7'));
+                const data = JSON.parse(localStorage.getItem('hpdu_judge_v8'));
                 if (data) {
                     Object.keys(data).forEach(id => {
                             const el = document.getElementById(id);
@@ -254,7 +277,7 @@
             
             function resetForm() {
                 if (confirm('データをリセットするか？')) {
-                    localStorage.removeItem('hpdu_judge_v7');
+                    localStorage.removeItem('hpdu_judge_v8');
                     location.reload();
                 }
             }
