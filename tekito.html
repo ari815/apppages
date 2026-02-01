@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WPM Constant Flow Trainer - February</title>
+    <style>
+        body {
+            margin: 0; padding: 0; overflow-x: hidden; background-color: #111;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+            display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+        }
+        
+        #header {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: #ffcc80; border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 2000; color: #333; padding: 0 20px; box-sizing: border-box;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .header-item { font-size: 1.1rem; font-weight: bold; }
+        .timer { font-family: monospace; width: 100px; text-align: center; }
+        
+        .btn-mini {
+            padding: 8px 15px; border: none; border-radius: 5px;
+            background: #e67e22; color: white; font-weight: bold;
+            cursor: pointer; transition: 0.2s;
+        }
+        
+        #menu {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 3000; background: rgba(30, 30, 30, 0.98);
+            padding: 30px; border-radius: 20px; text-align: center; color: white;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); width: 400px;
+        }
+        
+        .menu-section { margin-bottom: 20px; }
+        .menu-label { display: block; margin-bottom: 10px; font-weight: bold; color: #ffcc80; }
+        
+        .btn-main {
+            width: 100%; margin: 5px 0; padding: 12px; border: none;
+            border-radius: 8px; background: #eee; color: #111;
+            font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-main:hover { background: #fff; transform: scale(1.02); }
+        .btn-main.active { background: #e67e22; color: white; }
+        
+        #countdown {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 4000; color: #fff; font-size: 10rem; font-weight: bold;
+            display: none; text-shadow: 0 0 40px rgba(0,0,0,1); pointer-events: none;
+        }
+        
+        #content-wrapper {
+            position: relative; z-index: 1; width: 700px; max-width: 95%;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(8px);
+            padding: 25px; border-radius: 15px; 
+            margin-top: 100px; 
+            box-sizing: border-box;
+            will-change: transform;
+        }
+        
+        table { width: 100%; border-collapse: collapse; color: #fff; font-size: 1.3rem; line-height: 1.6; }
+        td { padding: 12px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .en { font-weight: bold; width: 60%; }
+        .ja { color: #aaa; text-align: left; font-size: 1.05rem; width: 40%; }
+        .full-text { line-height: 2; padding: 20px 10px; }
+    </style>
+</head>
+<body>
+    
+    <div id="header">
+        <div class="header-item" style="color:#d35400">Constant Flow Reader</div>
+        <div class="header-item">Words: <span id="word-count">0</span></div>
+        <div class="header-item timer" id="timer-display">0.0s</div>
+        <button class="btn-mini" onclick="resetGame()">Stop / Reset</button>
+    </div>
+    
+    <div id="countdown"></div>
+    
+    <div id="menu">
+        <div class="menu-section">
+            <span class="menu-label">1. 表示パターンを選択</span>
+            <button class="btn-main active" onclick="setPattern(1)">英＋日 (スラッシュごと)</button>
+            <button class="btn-main" onclick="setPattern(2)">英文のみ (全文)</button>
+            <button class="btn-main" onclick="setPattern(3)">英文 (空欄あり)</button>
+            <button class="btn-main" onclick="setPattern(4)">英文 (和訳混じり)</button>
+        </div>
+        <div class="menu-section">
+            <span class="menu-label">2. スクロール速度</span>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-main" onclick="preStart(0.4)">ゆっくり</button>
+                <button class="btn-main" onclick="preStart(0.6)">普通</button>
+                <button class="btn-main" onclick="preStart(1.0)">速い</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="content-wrapper">
+        <table id="main-table">
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+    
+    <script>
+        const CHUNK_DATA = [
+            { en: "February is", ja: "2月は〜です" },
+            { en: "the second month", ja: "2番目の月" },
+            { en: "of the year", ja: "その年の" },
+            { en: "in the Julian and Gregorian calendars,", ja: "ユリウス暦とグレゴリオ暦において、" },
+            { en: "coming", ja: "（それは）来ます" },
+            { en: "between January and March.", ja: "1月と3月の間に。" },
+            { en: "It has 28 days", ja: "それは28日あります" },
+            { en: "in common years,", ja: "平年には、" },
+            { en: "and 29 days", ja: "そして29日（あります）" },
+            { en: "in leap years.", ja: "閏年には。" },
+            { en: "This was", ja: "これは〜のためでした" },
+            { en: "to make the calendar match", ja: "カレンダーを一致させる" },
+            { en: "to the rest of the world.", ja: "世界の他の地域と。" }
+        ];
+        
+        const PARAGRAPH_DATA = [
+            { 
+                full: "February is the second month of the year in the Julian and Gregorian calendars, coming between January and March. It has 28 days in common years, and 29 days in leap years. This was to make the calendar match to the rest of the world.",
+                blank: "February is the second month of the year in the Julian and (G　　) calendars, coming between January and March. It has 28 days in (c　　) years, and 29 days in (l　　) years. This was to make the (c　　) (m　　) to the rest of the world.",
+                mixed: "February is 2番目の月(3) of the year in the Julian and Gregorian calendars, coming 1月と3月の間に(3). It has 28 days in common years, and 29 days in 閏年(2). This was to カレンダーを一致させる(4) to the rest of the world."
+            }
+        ];
+        
+        let currentPattern = 1;
+        let startTime, timerInterval, scrollRequest;
+        let currentY = 0;
+        
+        function setPattern(p) {
+            currentPattern = p;
+            renderTable();
+            const buttons = document.querySelectorAll('.menu-section:first-child .btn-main');
+            buttons.forEach((btn, idx) => {
+                btn.classList.toggle('active', (idx + 1) === p);
+            });
+        }
+        
+        function renderTable() {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+            let totalWords = 0;
+            
+            if (currentPattern === 1) {
+                CHUNK_DATA.forEach(row => {
+                    totalWords += row.en.split(/\s+/).filter(w => w.length > 0).length;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td class="en">${row.en}</td><td class="ja">${row.ja}</td>`;
+                    tableBody.appendChild(tr);
+                });
+            } else {
+                PARAGRAPH_DATA.forEach(p => {
+                    totalWords += p.full.split(/\s+/).filter(w => w.length > 0).length;
+                    const tr = document.createElement('tr');
+                    let text = "";
+                    if (currentPattern === 2) text = p.full;
+                    else if (currentPattern === 3) text = p.blank;
+                    else if (currentPattern === 4) text = p.mixed;
+                    
+                    tr.innerHTML = `<td class="full-text" colspan="2">${text}</td>`;
+                    tableBody.appendChild(tr);
+                });
+            }
+            document.getElementById('word-count').innerText = totalWords;
+        }
+        
+        function preStart(speed) {
+            document.getElementById('menu').style.display = 'none';
+            window.scrollTo(0, 0);
+            
+            const countdownEl = document.getElementById('countdown');
+            countdownEl.style.display = 'block';
+            let count = 3;
+            countdownEl.innerText = count;
+            
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownEl.innerText = count;
+                } else {
+                    clearInterval(timer);
+                    countdownEl.style.display = 'none';
+                    startConstantScrolling(speed);
+                }
+            }, 1000);
+        }
+        
+        function startConstantScrolling(pixelsPerFrame) {
+            stopAnimations();
+            startTime = Date.now();
+            currentY = 0;
+            
+            timerInterval = setInterval(() => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                document.getElementById('timer-display').innerText = elapsed.toFixed(1) + "s";
+            }, 100);
+            
+            const wrapper = document.getElementById('content-wrapper');
+            
+            function step() {
+                currentY -= pixelsPerFrame;
+                wrapper.style.transform = `translateY(${currentY}px)`;
+                
+                const rect = wrapper.getBoundingClientRect();
+                if (rect.bottom < 0) {
+                    stopAnimations();
+                    return;
+                }
+                scrollRequest = requestAnimationFrame(step);
+            }
+            scrollRequest = requestAnimationFrame(step);
+        }
+        
+        function stopAnimations() {
+            if (scrollRequest) cancelAnimationFrame(scrollRequest);
+            if (timerInterval) clearInterval(timerInterval);
+            scrollRequest = null;
+            timerInterval = null;
+        }
+        
+        function resetGame() {
+            stopAnimations();
+            const wrapper = document.getElementById('content-wrapper');
+            currentY = 0;
+            wrapper.style.transform = 'translateY(0px)';
+            window.scrollTo(0, 0);
+            document.getElementById('timer-display').innerText = "0.0s";
+            document.getElementById('menu').style.display = 'block';
+            renderTable();
+        }
+        
+        renderTable();
+    </script>
+</body>
+</html>
